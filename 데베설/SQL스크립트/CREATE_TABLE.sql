@@ -1,0 +1,149 @@
+
+CREATE TABLE USER (
+    UserID INT PRIMARY KEY,
+    UserType ENUM('Member', 'NonMember') NOT NULL
+);
+
+
+CREATE TABLE NON_MEMBER (
+    UserID INT PRIMARY KEY,
+    Non_Name_ VARCHAR(20) NOT NULL,
+    Non_PhoneNumber VARCHAR(15) NOT NULL,
+    UsageTIME TIME,
+    Permission BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (UserID) REFERENCES USER(UserID)
+);
+
+
+CREATE TABLE MEMBER (
+    UserID INT PRIMARY KEY,
+    Name_ VARCHAR(20) NOT NULL,
+    PhoneNumber VARCHAR(20) NOT NULL,
+    UsageTIME TIME,
+    Duration DATETIME,
+    Permission BOOLEAN DEFAULT FALSE,
+    InviteID INT,
+    FOREIGN KEY (UserID) REFERENCES USER(UserID),
+    FOREIGN KEY (InviteID) REFERENCES MEMBER(UserID)
+);
+
+
+CREATE TABLE SEAT (
+    SeatID INT PRIMARY KEY,
+    FloorID INT NOT NULL,
+    IsAvailable BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE LOCKER (
+    LockerID INT PRIMARY KEY,
+    FloorID INT NOT NULL,
+    IsAvailable BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE STUDYROOM (
+    RoomID INT PRIMARY KEY,
+    FloorID INT NOT NULL,
+    MaxCapacity INT NOT NULL,
+    IsAvailable BOOLEAN DEFAULT TRUE
+);
+
+
+CREATE TABLE SEAT_RES (
+    ReservationID INT AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    SeatID INT NOT NULL,
+    ReservationStartTime DATETIME,
+    CheckoutTime DATETIME,
+    PRIMARY KEY (ReservationID, SeatID),
+    FOREIGN KEY (UserID) REFERENCES USER(UserID),
+    FOREIGN KEY (SeatID) REFERENCES SEAT(SeatID)
+);
+
+
+CREATE TABLE STUDYROOM_RES (
+    ReservationID INT AUTO_INCREMENT,
+    RoomID INT NOT NULL,
+    UserID INT NOT NULL,
+    StartTime DATETIME,
+    EndTime DATETIME,
+    PRIMARY KEY (ReservationID, RoomID),
+    FOREIGN KEY (RoomID) REFERENCES STUDYROOM(RoomID),
+    FOREIGN KEY (UserID) REFERENCES MEMBER(UserID)
+);
+
+
+CREATE TABLE LOCKER_RES (
+    ReservationID INT AUTO_INCREMENT,
+    LockerID INT NOT NULL,
+    UserID INT NOT NULL,
+    StartTime DATETIME,
+    EndTime DATETIME,
+    PRIMARY KEY (ReservationID, LockerID),
+    FOREIGN KEY (LockerID) REFERENCES LOCKER(LockerID),
+    FOREIGN KEY (UserID) REFERENCES MEMBER(UserID)
+);
+
+
+CREATE TABLE SPECIAL_PRODUCT (
+    SP_ProductID INT PRIMARY KEY,
+    SP_ProductTime TIME NOT NULL,
+    SP_ProductPrice DECIMAL(10, 2) NOT NULL
+);
+
+
+CREATE TABLE NON_MEMBER_PRODUCT (
+    NonMemberProductID INT PRIMARY KEY,
+    NonMemberProductTime TIME NOT NULL,
+    NonMemberProductPrice DECIMAL(10, 2) NOT NULL
+);
+
+
+CREATE TABLE MEMBER_PRODUCT (
+    ProductID INT PRIMARY KEY,
+    ProductTime TIME NOT NULL,
+    ProductDuration DATETIME,
+    ProductPrice DECIMAL(10, 2) NOT NULL
+);
+
+
+CREATE TABLE MEMBER_PAYMENT (
+    PaymentID INT AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    ProductID INT NOT NULL,
+    PaymentStartTime DATETIME,
+    PaymentCompleteTime DATETIME,
+    PaymentAmount DECIMAL(10, 2),
+    PRIMARY KEY (PaymentID, ProductID),
+    FOREIGN KEY (UserID) REFERENCES MEMBER(UserID),
+    FOREIGN KEY (ProductID) REFERENCES MEMBER_PRODUCT(ProductID)
+);
+
+
+CREATE TABLE NON_MEMBER_PAYMENT (
+    NonMemberPaymentID INT AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    NonMemberProductID INT NOT NULL,
+    NonMemberPaymentStartTime DATETIME,
+    NonMemberPaymentCompleteTime DATETIME,
+    NonMemberPaymentAmount DECIMAL(10, 2),
+    PRIMARY KEY (NonMemberPaymentID, NonMemberProductID),
+    FOREIGN KEY (UserID) REFERENCES NON_MEMBER(UserID),
+    FOREIGN KEY (NonMemberProductID) REFERENCES NON_MEMBER_PRODUCT(NonMemberProductID)
+);
+
+
+CREATE TABLE SP_MEMBER_PAYMENT (
+    SP_PaymentID INT AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    SP_ProductID INT NOT NULL,
+    SP_PaymentStartTime DATETIME,
+    SP_PaymentCompleteTime DATETIME,
+    SP_PaymentAmount DECIMAL(10, 2),
+    InviteID INT NOT NULL, 
+    PRIMARY KEY (SP_PaymentID, SP_ProductID),
+    FOREIGN KEY (UserID) REFERENCES MEMBER(UserID),
+    FOREIGN KEY (InviteID) REFERENCES MEMBER(UserID),
+    FOREIGN KEY (SP_ProductID) REFERENCES SPECIAL_PRODUCT(SP_ProductID)
+);

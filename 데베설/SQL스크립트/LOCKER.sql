@@ -1,0 +1,20 @@
+INSERT INTO LOCKER (LockerID, FloorID, IsAvailable)
+VALUES
+(1,1, TRUE),
+(2,1,TRUE),
+(3,1,FALSE),
+(4,1,FALSE),
+(5,1,TRUE),
+(6,1,FALSE),
+(7,2,FALSE),
+(8,2,FALSE),
+(9,2,FALSE),
+(10,2,TRUE),
+(11,2,FALSE),
+(12,2,TRUE),
+(13,3,TRUE),
+(14,3,FALSE),
+(15,3,FALSE),
+(16,3,FALSE),
+(17,3,FALSE),
+(18,3,FALSE)
