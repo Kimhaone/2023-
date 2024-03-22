@@ -1,0 +1,180 @@
+---
+title: "Assignment 01"
+subtitle: "데이터 애널리틱스"
+author: "김하원"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+<br> 
+
+### No.01
+<u>
+2023년 기준, 강서구(최대)와 도봉구(최소)의 월 별 미세먼지 대기질 추이 시각화
+</u>
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggmap)
+library(lubridate)
+```
+
+```{r, warning=FALSE, message=FALSE}
+
+#데이터불러오기
+station <- read.csv('C:/Users/onlyo/OneDrive/바탕 화면/2024/4-2/데이터애널리스틱스/2주차/과제/station_coord.csv', fileEncoding = "euc-kr")
+air <- read.csv('C:/Users/onlyo/OneDrive/바탕 화면/2024/4-2/데이터애널리스틱스/2주차/과제/monthly_air_quality_seoul.csv', fileEncoding = "euc-kr")
+
+
+#2023년(23년 01월~12월) 측정소 별 데이터를 추출
+data2023<-subset(air,  측정월 >= 202301 & 측정월 <= 202312)
+
+#2023년 측정소 별 미세먼지 평균을 계산한 df 생성
+total_mean <-aggregate(미세먼지 ~ 측정소명, data2023, mean)
+total_mean
+
+#2023년 서울시의 평균 미세먼지 대기질
+seoul_mean2023<-mean(total_mean$미세먼지)
+seoul_mean2023
+
+#2023년 최대 미세먼지 대기질 구역: 강서구
+total_mean[which.max(total_mean$미세먼지), "측정소명"]
+#2023년 최소 미세먼지 대기질 구역: 도봉구
+total_mean[which.min(total_mean$미세먼지), "측정소명"]
+
+
+#최대와 최소 측정소의 데이터 추출
+MaxMin2023 <-subset(data2023, 측정소명=="강서구" | 측정소명=="도봉구")
+
+#date 타입으로 변환하기 위해 임의로 day에 01일 추가
+MaxMin2023$측정월<-as.Date(paste0(MaxMin2023$측정월, "-01"), "%Y%m-%d")
+#월 추출
+MaxMin2023$month <- month(MaxMin2023$측정월)
+
+#2023년 기준, 강서구와 도봉구의 월 별 미세먼지 대기질 추이 시각화(line그래프)
+ggplot(MaxMin2023, aes(x=month, y=미세먼지))+geom_line(aes(group=측정소명, color=측정소명), size=1, alpha=0.7)+geom_point()+geom_hline(yintercept = seoul_mean2023, linetype="dashed", color="red")+labs(title = "2023년 강서구와 도봉구의 미세먼지 대기질", x = "측정 월", y = "미세먼지 대기질")+ scale_x_continuous(breaks = c(01,02,03,04,05,06,07,08,09,10,11,12))+annotate("text", x = 2, y = seoul_mean2023 + 2.5, label = "2023년 서울시 평균 대기질", color ="red")
+```
+<br>
+- 2023년 강서구와 도봉구의 미세먼지 대기질 값이 가장 높은 달은 3월, 낮은 달은 9월인 것을 확인할 수 있다. 3월부터 9월까지 하강하다가 이후부터 다시 상승하는 대기질 경향을 보인다. 두 지역 간의 대기질 차이는 1월에 가장 크고, 11월에 가장 작다.
+</br>
+
+<hr />
+### No.02
+<u>
+10년 간(2014년~2023년) 강서구의 월 별 (초)미세먼지 대기질 시각화
+</u>
+```{r, warning=FALSE, message=FALSE}
+#10년간 강서구의 데이터 추출
+data_gangseo <- subset(air, 측정월 >= 201401 & 측정월 <= 202312 & 측정소명 == "강서구")
+
+#date 타입으로 변환하기 위해 임의로 day에 01일 추가
+data_gangseo$측정월<-as.Date(paste0(data_gangseo$측정월, "-01"), "%Y%m-%d")
+#월 추출
+data_gangseo$month <- month(data_gangseo$측정월)
+
+
+#미세먼지 box plot 시각화
+ggplot(data_gangseo, aes(x = month, y = 미세먼지, group = month)) +geom_boxplot(fill='tomato', alpha = 0.7) +labs(title="2014-2023년 간 강서구의 월 별 미세먼지 대기질", x ="측정 월", y = "초미세먼지 대기질")+ scale_x_continuous(breaks = c(01,02,03,04,05,06,07,08,09,10,11,12))
+```
+<br>
+- 강서구의 미세먼지 대기질은 3월의 평균이 가장 높은 것을 확인할 수 있다. 특히 3월과 5월에 미세먼지 대기질의 분포가 넓다.
+</br>
+```{r, warning=FALSE, message=FALSE}
+#초미세먼지 box plot 시각화
+ggplot(data_gangseo, aes(x = month, y = 초미세먼지, group = month)) +geom_boxplot(fill='tomato', alpha = 0.7) +labs(title="2014-2023년 간 강서구의 월 별 초미세먼지 대기질", x ="측정 월", y = "초미세먼지 대기질")+ scale_x_continuous(breaks = c(01,02,03,04,05,06,07,08,09,10,11,12))
+```
+<br>
+- 초미세먼지의 경우, 2월의 평균이 가장 높은 것을 확인할 수 있다. 특히 3월에 초미세먼지 대기질의 분포가 가장 넓다. 미세먼지 대기질에 비해 월 별 대기질의 분포가 좁은 경향을 보인다.
+</br>
+
+<hr />
+### No.03
+<u>
+10년 간(2014~2023) 강서구의 계절 별 미세먼지 예보 비율
+</u>
+```{r, warning=FALSE, message=FALSE}
+
+#계절 판단 함수(03~05월-봄, 06~08월-여름, 09~11월-가을, 12~02월-겨울)
+library(lubridate)
+get_season <- function(month) {
+  if(month %in% 3:5) {
+    return("spring")
+  } else if(month %in% 6:8) {
+    return("summer")
+  } else if(month %in% 9:11) {
+    return("autumn")
+  } else {
+    return("winter")
+  }
+}
+#월에 따른 계절 컬럼 생성
+data_gangseo$season <- sapply(data_gangseo$month, get_season)
+
+# 미세먼지 대기질에 따른 예보 판단 함수(30 이하-good, 31~80-normal, 81~150-bad, 150~ -worse)
+get_rank <- function(dust) {
+  if (dust <= 30) {
+    return("good")
+  } else if (dust <= 80) {
+    return("normal")
+  } else if (dust <= 150) {
+    return("bad")
+  } else {
+    return("worse")
+  }
+}
+# rank 열 추가
+data_gangseo$rank <- sapply(data_gangseo$미세먼지, get_rank)
+
+#누적 bar 그래프
+ggplot(data_gangseo, aes(x = factor(season, levels = c("spring", "summer", "autumn", "winter")), 
+                         fill = factor(rank, levels = c("good", "bad", "normal", "worse"), 
+                                       labels = c("좋음", "나쁨","보통","매우 나쁨")))) +geom_bar(position = "fill") +labs(y = "Proportion") +scale_fill_brewer(palette = "Set2") +theme(legend.title = element_blank(),axis.title.x = element_text(size = 14), axis.title.y = element_text(size = 13)) +labs(title = "2014-2023년 간 강서구의 계절 별 미세먼지 예보 비율", x = "계절", y = "예보 별 비율") +scale_x_discrete(labels = c("봄", "여름", "가을", "겨울"))
+
+```
+<br>
+- 10년 간 강서구의 미세먼지 대기질은 "좋음" 예보에 해당하는 비율이 여름(06~08월)에 가장 많았다.
+"나쁨" 예보에 해당하는 비율은 겨울(12~2)에서 확인할 수 있었다.
+</br>
+
+<hr />
+### No.04
+<u>
+10년 간(2014~2023) 서울시 구별 미세먼지 "좋음" 빈도 시각화
+</u>
+```{r, warning=FALSE, message=FALSE}
+#API 등록
+register_stadiamaps("34cdbd27-6bd4-4097-9757-64e3f3a8910f", write = FALSE)
+#서울 지도 등록
+bbox_seoul <- c(left = 126.826128, bottom = 37.458073,
+ right = 127.194848, top = 37.696073)
+seoul <- get_stadiamap(bbox = bbox_seoul, zoom = 11, maptype =
+"stamen_toner")
+
+#10년간 서울시 데이터 추출
+data10y <- subset(air,  측정월 >= 201401 & 측정월 <= 202312)
+
+#결측값 확인
+summary(data10y) 
+#결측값이 있는 행 삭제
+data10y <-na.omit(data10y) 
+summary(data10y)
+
+#data10y에 rank 추가
+data10y$rank <- sapply(data10y$미세먼지, get_rank)
+good_air <- subset(data10y, rank == "good")
+
+#측정소명을 카운트한 도수분포표 작성
+goodCounts <- as.data.frame(table(good_air$측정소명))
+#station_coord와의 위도와 경도 병합을 위해 컬럼명 변경
+colnames(goodCounts)[colnames(goodCounts) == "Var1"] <- "측정소명"
+
+#측정소명 기준으로 병합
+merged_data <- merge(goodCounts, station, by = "측정소명", all.x = TRUE)
+merged_data
+
+#Dot Density 작성
+ggmap(seoul, base_layer = ggplot(merged_data,aes(x = longitude, y = latitude, size = Freq)))+geom_point(color = "Lime Green", alpha = 0.7)+scale_size_continuous(range = c(3, 12))
+```
+<br>
+- 10년 간 서울시의 미세먼지 대기질은 "좋음" 예보 빈도는 서울 중앙을 기준으로 서쪽에 위치할수록 적고, 북쪽에 위치할수록 많은 것을 알 수 있다. 특히 관악구의 "좋음" 예보가 적었던 것을 알 수 있다.
+
+</br>
